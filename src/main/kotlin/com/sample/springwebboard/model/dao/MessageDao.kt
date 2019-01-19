@@ -1,11 +1,20 @@
 package com.sample.springwebboard.model.dao
 
 import com.sample.springwebboard.model.entity.MessageEntity
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.datasource.DataSourceUtils
+import org.springframework.stereotype.Repository
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.SQLException
+import javax.sql.DataSource
 
-class MessageDao(private val con: Connection) {
+@Repository
+class MessageDao() {
+
+    @Autowired
+    lateinit var dataSource: DataSource
 
     fun getNextId(): Int {
 
@@ -13,7 +22,9 @@ class MessageDao(private val con: Connection) {
         var rs: ResultSet? = null
 
         try {
-            val sqlBuilder: StringBuilder = StringBuilder()
+            val con = getConnection()
+
+            val sqlBuilder = StringBuilder()
             sqlBuilder.append("SELECT              ")
             sqlBuilder.append("  MAX(id) as max_id ")
             sqlBuilder.append("FROM                ")
@@ -22,24 +33,26 @@ class MessageDao(private val con: Connection) {
             ps = con.prepareStatement(sqlBuilder.toString())
             rs = ps.executeQuery()
 
-            val nextId: Int =
-                    if (rs.next()) rs.getInt("max_id") + 1
-                    else 1
+            return if (rs.next()) rs.getInt("max_id") + 1
+                   else 1
 
-            return nextId
+        } catch (e: SQLException) {
+            e.printStackTrace()
+            throw RuntimeException("SQL Error: Select MaxId")
         } finally {
-            ps!!.close()
             rs!!.close()
+            ps!!.close()
         }
     }
 
     fun selectMessage(): List<MessageEntity> {
 
-        val list: MutableList<MessageEntity> = mutableListOf()
         var ps: PreparedStatement? = null
         var rs: ResultSet? = null
 
         try {
+            val con = getConnection()
+
             val sqlBuilder: StringBuilder = StringBuilder()
             sqlBuilder.append("SELECT       ")
             sqlBuilder.append("  id,        ")
@@ -54,8 +67,9 @@ class MessageDao(private val con: Connection) {
             ps = con.prepareStatement(sqlBuilder.toString())
             rs = ps.executeQuery()
 
+            val list: MutableList<MessageEntity> = mutableListOf()
             while (rs.next()) {
-                val entity: MessageEntity = MessageEntity(
+                val entity = MessageEntity(
                         rs.getInt("id"),
                         rs.getString("name"),
                         rs.getString("text"),
@@ -66,17 +80,22 @@ class MessageDao(private val con: Connection) {
 
             return list ?: emptyList<MessageEntity>()
 
+        } catch (e: SQLException) {
+            e.printStackTrace()
+            throw RuntimeException("SQL ERROR: Select Message")
         } finally {
-            ps!!.close()
             rs!!.close()
+            ps!!.close()
         }
     }
 
-    fun insertMessage(entity: MessageEntity): Boolean {
+    fun insertMessage(entity: MessageEntity) {
 
         var ps: PreparedStatement? = null
 
         try {
+            val con = getConnection()
+
             val sqlBuilder: StringBuilder = StringBuilder()
             sqlBuilder.append("INSERT INTO message ( ")
             sqlBuilder.append("  id,                 ")
@@ -96,11 +115,17 @@ class MessageDao(private val con: Connection) {
             ps.setString(3, entity.text)
             ps.setTimestamp(4, entity.created_at)
 
-            val result: Int = ps.executeUpdate()
-            return (result == 1)
+            ps.executeUpdate()
 
+        } catch (e: SQLException) {
+            e.printStackTrace()
+            throw RuntimeException("SQL ERROR: Insert Message")
         } finally {
             ps!!.close()
         }
+    }
+
+    private fun getConnection(): Connection {
+        return DataSourceUtils.getConnection(dataSource)
     }
 }
