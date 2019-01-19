@@ -8,17 +8,17 @@
     <title>Spring Bootで作った掲示板</title>
 </head>
 <body>
-    <h1>Spring Bootで作った掲示板</h1>
-    <form action="/" method="post">
-        <input type="text" name="name" placeholder="name" required></br>
-        <textarea name="text" rows="4" cols="50" maxlength="250" placeholder="message"></textarea></br>
-        </br>
-        <input type="submit" value="投稿">
-    </form>
-    <div th:each="list:${list}">
-        <hr>
-        <p th:text="|No: *{list.id} / Name: *{list.name} / Time: *{list.created_at}|"></p>
-        <p th:text="${list.text}"></p>
-    </div>
+<h1>Spring Bootで作った掲示板</h1>
+<input action="/" method="post">
+    <input type="text" name="name" placeholder="name" required></br>
+    <textarea name="text" rows="4" cols="50" maxlength="250" placeholder="message"></textarea></br>
+    </br>
+    <input type="submit" value="投稿">
+</form>
+<div th:each="list:${list}">
+    <hr>
+    <p th:text="|No: *{list.id} / Name: *{list.name} / Time: *{list.created_at}|"></p>
+    <p th:text="${list.text}"></p>
+</div>
 </body>
 </html>
