@@ -18,7 +18,10 @@
 <div th:each="list:${list}">
     <hr>
     <p th:text="|No: *{list.id} / Name: *{list.name} / Time: *{list.created_at}|"></p>
-    <p th:text="${list.text}"></p>
+    <th:block th:each="line, stat : ${list.text.split('\r\n|\r|\n', -1)}">
+        <th:block th:text="${line}"/>
+        <br th:if="${!stat.last}"/>
+    </th:block>
 </div>
 </body>
 </html>

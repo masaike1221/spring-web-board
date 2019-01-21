@@ -14,8 +14,11 @@ import javax.sql.DataSource
 class MessageDao() {
 
     @Autowired
-    lateinit var dataSource: DataSource
+    private lateinit var dataSource: DataSource
 
+    /**
+     * @return メッセージIDの発行
+     */
     fun getNextId(): Int {
 
         var ps: PreparedStatement? = null
@@ -38,13 +41,16 @@ class MessageDao() {
 
         } catch (e: SQLException) {
             e.printStackTrace()
-            throw RuntimeException("SQL Error: Select MaxId")
+            throw RuntimeException("SQL ERROR: Select MaxId")
         } finally {
             rs!!.close()
             ps!!.close()
         }
     }
 
+    /**
+     * @return 投稿内容の全取得
+     */
     fun selectMessage(): List<MessageEntity> {
 
         var ps: PreparedStatement? = null
@@ -89,6 +95,9 @@ class MessageDao() {
         }
     }
 
+    /**
+     * @param MessageEntity 投稿内容
+     */
     fun insertMessage(entity: MessageEntity) {
 
         var ps: PreparedStatement? = null
@@ -125,7 +134,15 @@ class MessageDao() {
         }
     }
 
+    /**
+     * @return Transaction制御下にあるコネクション
+     */
     private fun getConnection(): Connection {
-        return DataSourceUtils.getConnection(dataSource)
+        try {
+            return DataSourceUtils.getConnection(dataSource)
+        } catch (e: SQLException){
+            e.printStackTrace()
+            throw RuntimeException("ERROR: Get Connection Error")
+        }
     }
 }
