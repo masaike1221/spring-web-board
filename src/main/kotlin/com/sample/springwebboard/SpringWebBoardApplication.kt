@@ -1,11 +1,15 @@
 package com.sample.springwebboard
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication
+import org.springframework.boot.builder.SpringApplicationBuilder
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
+
 
 @SpringBootApplication
-class SpringWebBoardApplication
+class SpringWebBoardApplication : SpringBootServletInitializer() {
 
-fun main(args: Array<String>) {
-	runApplication<SpringWebBoardApplication>(*args)
+    override fun configure(application: SpringApplicationBuilder): SpringApplicationBuilder {
+        return application.sources(SpringWebBoardApplication::class.java)
+    }
 }
+
